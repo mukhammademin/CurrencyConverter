@@ -13,29 +13,40 @@ struct ContentView: View {
     let eurRate = 13000.0
     
     
-    @State private var selectedCurrency = "USD -> UZS"
-    let currencies = ["UZS → USD", "UZS → EUR", "USD → UZS", "EUR → UZS"]
+    @State private var selectedCurrency = "🇺🇸 USD → 🇺🇿 UZS"
+    let currencies = ["🇺🇿 UZS → 🇺🇸 USD",
+                      "🇺🇿 UZS → 🇪🇺 EUR",
+                      "🇺🇸 USD → 🇺🇿 UZS",
+                      "🇪🇺 EUR → 🇺🇿 UZS"
+    ]
     
     var convertedAmount: Double {
         guard let amount = Double(input) else { return 0 }
         
         switch selectedCurrency {
-        case "UZS → USD": return amount / usdRate
-        case "UZS → EUR": return amount / eurRate
-        case "USD → UZS": return amount * usdRate
-        case "EUR → UZS": return amount * eurRate
-        default : return 0
+            case "🇺🇿 UZS → 🇺🇸 USD": return amount / usdRate
+            case "🇺🇿 UZS → 🇪🇺 EUR": return amount / eurRate
+            case "🇺🇸 USD → 🇺🇿 UZS": return amount * usdRate
+            case "🇪🇺 EUR → 🇺🇿 UZS": return amount * eurRate
+            default: return 0
         }
     }
     var outputCurrencySymbol: String {
-        switch selectedCurrency {
-        case "UZS → USD", "USD → UZS":
-            return "USD"
-        case "UZS → EUR", "EUR → UZS":
-            return "EUR"
-        default:
+        if selectedCurrency.hasSuffix("USD") {
+            return "$"
+        } else if selectedCurrency.hasSuffix("EUR") {
+            return "€"
+        } else if selectedCurrency.hasSuffix("UZS") {
+            return "so'm"
+        } else {
             return ""
         }
+    }
+    
+    var formattedConvertedAmount: String {
+        guard !input.isEmpty else { return "Enter amount to convert" }
+        let format = convertedAmount <= 0.01 ? "%.4f" : "%.2f"
+        return String(format: format, convertedAmount) + " \(outputCurrencySymbol)"
     }
     
     var body: some View {
@@ -63,19 +74,24 @@ struct ContentView: View {
                 }
                 
                 Section(header: Text("Converted amount")) {
-                    if input.isEmpty {
-                        Text("Enter amount to convert")
-                    } else {
-                        Text("\(convertedAmount, specifier: convertedAmount <= 0.01 ? "%.4f" : "%.2f") \(outputCurrencySymbol)")
-                    }
+                    
+                    Text(formattedConvertedAmount)
+                        .font(.system(size: 28, weight: .semibold, design: .rounded))
+                        .foregroundColor(input.isEmpty ? .secondary : .green)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(12)
+                        .animation(.easeInOut, value: input)
                 }
+                
             }
             
             .navigationTitle("Currency converter")
         }
         
     }
-
+    
 }
 
 #Preview {
